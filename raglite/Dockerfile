@@ -5,5 +5,8 @@ ENV GIN_MODE=release \
     GOMAXPROCS=2 \
     WORKER_CONCURRENCY=2 \
     EMBEDDER_RPM=800 \
-    LLM_RPM=50
+    LLM_RPM=50 \
+    NATS_USER=panda-wiki \
+    STORAGE_MINIO_ACCESS_KEY_ID=s3panda-wiki \
+    DATABASE_POSTGRESQL_SSL_MODE=disable
 CMD ["raglite", "-c", "/app/configs/config.yaml"]

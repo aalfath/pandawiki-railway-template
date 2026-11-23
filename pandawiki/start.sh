@@ -10,17 +10,6 @@ export PORT
 : "${ADMIN_PASSWORD:?ADMIN_PASSWORD is not set}"
 : "${JWT_SECRET:?JWT_SECRET is not set}"
 
-# Values PandaWiki reads only from its config file (no env override upstream).
-mkdir -p /app/config
-cat > /app/config/config.yml <<CFG
-rag:
-  provider: ct
-  ct_rag:
-    api_key: "${RAG_API_KEY:-}"
-s3:
-  access_key: "${S3_ACCESS_KEY:-s3panda-wiki}"
-CFG
-
 export XDG_DATA_HOME=/tmp/caddy/data XDG_CONFIG_HOME=/tmp/caddy/config
 mkdir -p /run/caddy /tmp/caddy/data /tmp/caddy/config
 rm -f "$CADDY_API"
