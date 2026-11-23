@@ -1,0 +1,72 @@
+# Static Caddy: the admin console on $PORT plus two loopback forwarders that the
+# API-managed wiki routes expect (see Dockerfile). Wiki sites themselves are
+# served by the second, API-managed Caddy on port 80.
+{
+	admin off
+	auto_https off
+	persist_config off
+	servers {
+		trusted_proxies static 0.0.0.0/0 ::/0
+	}
+}
+
+:{$PORT} {
+	handle /healthz {
+		respond "ok" 200
+	}
+
+	@stream path /share/v1/chat/message /api/v1/creation/text
+	handle @stream {
+		reverse_proxy 127.0.0.1:8000 {
+			flush_interval -1
+			transport http {
+				read_timeout 24h
+				write_timeout 24h
+			}
+		}
+	}
+
+	@backend path /api* /share*
+	handle @backend {
+		reverse_proxy 127.0.0.1:8000 {
+			transport http {
+				read_timeout 10m
+				write_timeout 10m
+			}
+		}
+	}
+
+	handle /static-file/* {
+		@notpdf not path *.pdf
+		header @notpdf Content-Disposition attachment
+		reverse_proxy {$S3_ENDPOINT} {
+			header_up Host {upstream_hostport}
+			flush_interval -1
+		}
+	}
+
+	handle {
+		root * /opt/frontend/dist
+		@html path / *.html
+		header @html Cache-Control no-cache
+		try_files {path} {path}/ {path}.html /index.html
+		file_server
+	}
+}
+
+# Wiki front end (Next.js "Wiki" service), dialled by the API-managed Caddy.
+:3010 {
+	bind 127.0.0.112
+	reverse_proxy {$WIKI_HOST}:3010 {
+		flush_interval -1
+	}
+}
+
+# MinIO, dialled by the API-managed Caddy for /static-file/*.
+:9000 {
+	bind 127.0.0.12
+	reverse_proxy {$S3_ENDPOINT} {
+		header_up Host {upstream_hostport}
+		flush_interval -1
+	}
+}

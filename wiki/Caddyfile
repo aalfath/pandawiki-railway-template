@@ -1,0 +1,38 @@
+# Public entry for the wiki sites. Every request goes to the wiki router that
+# the PandaWiki API manages (port 80 of the PandaWiki service). That router
+# adds the knowledge-base header and sends pages back to this service's
+# Next.js server on :3010 and API calls to the API.
+{
+	admin off
+	auto_https off
+	persist_config off
+	servers {
+		trusted_proxies static 0.0.0.0/0 ::/0
+	}
+}
+
+:{$PORT} {
+	handle /healthz {
+		respond "ok" 200
+	}
+	handle {
+		reverse_proxy {$PANDAWIKI_HOST}:80 {
+			flush_interval -1
+			transport http {
+				read_timeout 10m
+				write_timeout 10m
+			}
+		}
+	}
+	handle_errors 502 503 504 {
+		header Content-Type "text/html; charset=utf-8"
+		respond <<HTML
+			<!doctype html><meta charset="utf-8"><title>PandaWiki</title>
+			<body style="font-family:sans-serif;max-width:40rem;margin:4rem auto">
+			<h1>No wiki site yet</h1>
+			<p>Sign in to the PandaWiki admin console and create a knowledge base.
+			Use this site's domain, HTTP port 80, and leave HTTPS off.
+			Railway already serves it over HTTPS.</p></body>
+			HTML 503
+	}
+}
