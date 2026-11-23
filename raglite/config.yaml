@@ -1,0 +1,75 @@
+# RAGLite settings. Same as upstream's image except: the server listens on all
+# interfaces (dual-stack, for Railway's private network) and runs 2 workers.
+# Connection settings come from environment variables (DATABASE_POSTGRESQL_HOST, ...).
+server:
+  host: ""
+  port: 5050
+  api_key: ""
+
+database:
+  postgresql:
+    host: ""
+    port: 5432
+    database: "raglite_v2"
+    user: ""
+    password: ""
+    ssl_mode: "disable"
+
+  qdrant:
+    host: ""
+    port: 6334
+    api_key: ""
+
+nats:
+  url: ""
+  user: ""
+  password: ""
+  task_stream: "raglite_tasks"
+  event_stream: "raglite_events"
+  consumer: "raglite_workers"
+  task_subject_pattern: "raglite.tasks.>"
+  task_subject_prefix: "raglite.tasks"
+  task_filter_subject: "raglite.tasks.*"
+  event_subject_pattern: "raglite.events.>"
+  event_doc_update_subject: "raglite.events.doc.update"
+  event_model_status_subject: "raglite.events.model.status"
+
+storage:
+  minio:
+    endpoint: ""
+    access_key_id: ""
+    secret_access_key: ""
+    use_ssl: false
+    bucket_name: "raglite"
+
+worker:
+  concurrency: 2
+  db_batch_size: 100
+  timeout: 25m
+  max_images: 50
+  max_tables: 30
+  max_summaries: 100
+
+retrieval:
+  enabled: true
+  mode: "full"
+
+  query_rewrite:
+    enabled: false
+    num_queries: 3
+
+  sentence:
+    enabled: true
+
+  fulltext:
+    enabled: true
+    dense_weight: 0.5
+    sparse_weight: 0.5
+    fulltext_weight: 0
+
+  summary:
+    enabled: true
+
+logging:
+  level: "info"
+  format: "json"
